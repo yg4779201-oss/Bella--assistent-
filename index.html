@@ -1,0 +1,193 @@
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#090b16">
+<title>BELLA AI - Version 2.0</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#090b16;color:white;font-family:Arial,sans-serif;padding:22px}
+.app{max-width:480px;margin:auto;text-align:center}
+.logo{height:95px;width:95px;border-radius:50%;margin:25px auto;background:linear-gradient(135deg,#c4a5ff,#6545e9);display:grid;place-items:center;font-size:45px;box-shadow:0 0 40px #8055ff66}
+h1{font-size:35px;margin:10px}
+.sub{color:#a9abc1}
+.status{color:#b69aff;margin:22px 0;min-height:25px}
+select,input{background:#171c2b;color:white;border:1px solid #343951;border-radius:12px;padding:13px;font-size:15px}
+select{width:100%;margin:10px 0}
+.mic{width:85px;height:85px;border:0;border-radius:50%;background:#7352e8;color:white;font-size:35px;margin:22px;box-shadow:0 0 30px #7352e866}
+.mic.listening{background:#d84d72;animation:pulse 1s infinite}
+@keyframes pulse{50%{box-shadow:0 0 0 15px #d84d7233}}
+.chat{background:#171c2b;border:1px solid #30364b;border-radius:18px;padding:17px;text-align:left;min-height:150px;max-height:300px;overflow:auto;line-height:1.6;white-space:pre-wrap;margin:20px 0}
+.row{display:flex;gap:8px}
+.row input{flex:1;min-width:0}
+button{cursor:pointer}
+.send,.stop{border:0;border-radius:12px;padding:12px;background:#7352e8;color:white}
+.stop{background:#343b52;margin-top:10px}
+.small{font-size:12px;color:#9299ae;margin:20px}
+</style>
+</head>
+<body>
+<div class="app">
+<div class="logo">✦</div>
+<h1>BELLA</h1>
+<p class="sub">Your Personal AI Assistant</p>
+<div class="status" id="status">Hello! Main BELLA hoon. ❤️</div>
+
+<select id="language">
+<option value="hi-IN">Hindi + English</option>
+<option value="en-IN">English (India)</option>
+<option value="hi-IN">Hindi</option>
+</select>
+
+<button class="mic" id="mic">🎙️</button>
+<div class="sub">Tap microphone and talk to me</div>
+
+<div class="chat" id="chat">BELLA: Namaste! Main tumhari personal assistant hoon. Bolo, main kaise help karun?</div>
+
+<div class="row">
+<input id="message" placeholder="Type your message...">
+<button class="send" id="send">Send</button>
+</div>
+<button class="stop" id="stop">■ Stop Speaking</button>
+<p class="small">BELLA Version 2.0 • Voice Prototype</p>
+</div>
+
+<script>
+const statusBox=document.getElementById('status');
+const chat=document.getElementById('chat');
+const mic=document.getElementById('mic');
+const language=document.getElementById('language');
+const input=document.getElementById('message');
+
+let voices=[];
+
+function loadVoices(){
+ voices=speechSynthesis.getVoices();
+ }
+ loadVoices();
+ if('onvoiceschanged' in speechSynthesis){
+  speechSynthesis.onvoiceschanged=loadVoices;
+  }
+
+  
+  function speak(text, lang = 'hi-IN') {
+    if (!('speechSynthesis' in window)) {
+        statusBox.textContent = 'Voice is not supported.';
+            return;
+              }
+
+                speechSynthesis.cancel();
+
+                  const utterance = new SpeechSynthesisUtterance(text);
+
+                    // Use the phone's default Google TTS voice
+                      // so Android can apply your selected Voice II.
+                        utterance.lang = lang || 'hi-IN';
+
+                          // Natural-sounding speech settings
+                            utterance.rate = 0.88;
+                              utterance.pitch = 1.0;
+                                utterance.volume = 1.0;
+
+                                  utterance.onstart = () => {
+                                      statusBox.textContent = 'BELLA is speaking... ❤️';
+                                        };
+
+                                          utterance.onend = () => {
+                                              statusBox.textContent = 'BELLA is ready to listen.';
+                                                };
+
+                                                  utterance.onerror = () => {
+                                                      statusBox.textContent = 'Please try speaking again.';
+                                                        };
+
+                                                          // Do not assign utterance.voice here.
+                                                            // Let the Android default TTS engine select the voice.
+                                                              speechSynthesis.speak(utterance);
+                                                              }
+
+ 
+           function answer(text){
+            const q=text.toLowerCase();
+             let response,lang='en-IN';
+
+              if(/[ऀ-ॿ]/.test(text)){
+                lang='hi-IN';
+                  if(q.includes('नाम')||q.includes('name'))
+                     response='मेरा नाम BELLA है। मैं तुम्हारी पर्सनल AI असिस्टेंट हूँ।';
+                       else if(q.includes('समय')||q.includes('टाइम'))
+                          response='अभी समय है '+new Date().toLocaleTimeString('hi-IN');
+                            else if(q.includes('नमस्ते')||q.includes('हेलो'))
+                               response='नमस्ते! तुमसे बात करके बहुत अच्छा लगा। बताओ, आज क्या करना है?';
+                                 else
+                                    response='मैंने तुम्हारी बात सुनी: '+text+'। मेरा AI Brain अगले अपडेट में जोड़ा जाएगा।';
+                                     }else{
+                                       if(language.value==='hi-IN') lang='hi-IN';
+                                         if(q.includes('your name'))
+                                            response='My name is BELLA. I am your personal assistant.';
+                                              else if(q.includes('time'))
+                                                 response='The current time is '+new Date().toLocaleTimeString();
+                                                   else if(q.includes('hello')||q.includes('hi'))
+                                                      response='Hello! I am BELLA. How can I help you today?';
+                                                        else if(q.includes('how are you'))
+                                                           response='I am doing great! It is lovely talking to you.';
+                                                             else
+                                                                response='I heard you say: '+text+'. My AI Brain will be connected in the next update.';
+                                                                 }
+                                                                  chat.textContent='You: '+text+'\n\nBELLA: '+response;
+                                                                   statusBox.textContent='BELLA is speaking...';
+                                                                    speak(response,lang);
+                                                                    }
+
+                                                                    document.getElementById('send').onclick=()=>{
+                                                                     const text=input.value.trim();
+                                                                      if(!text)return;
+                                                                       answer(text);
+                                                                        input.value='';
+                                                                        };
+
+                                                                        input.addEventListener('keydown',e=>{
+                                                                         if(e.key==='Enter')document.getElementById('send').click();
+                                                                         });
+
+                                                                         mic.onclick=()=>{
+                                                                          const Recognition=window.SpeechRecognition||window.webkitSpeechRecognition;
+                                                                           if(!Recognition){
+                                                                             statusBox.textContent='Voice recognition is not supported. Please use Chrome.';
+                                                                               return;
+                                                                                }
+                                                                                 const recognition=new Recognition();
+                                                                                  recognition.lang=language.value;
+                                                                                   recognition.interimResults=false;
+                                                                                    recognition.onstart=()=>{
+                                                                                      mic.classList.add('listening');
+                                                                                        statusBox.textContent='Listening... Bolo, main sun rahi hoon.';
+                                                                                         };
+                                                                                          recognition.onresult=e=>{
+                                                                                            const text=e.results[0][0].transcript;
+                                                                                              answer(text);
+                                                                                               };
+                                                                                                recognition.onerror=e=>{
+                                                                                                  statusBox.textContent='Microphone error: '+e.error+'. Please try again.';
+                                                                                                   };
+                                                                                                    recognition.onend=()=>{
+                                                                                                      mic.classList.remove('listening');
+                                                                                                        if(!speechSynthesis.speaking)statusBox.textContent='BELLA is ready to listen.';
+                                                                                                         };
+                                                                                                          recognition.start();
+                                                                                                          };
+
+                                                                                                          document.getElementById('stop').onclick=()=>{
+                                                                                                           speechSynthesis.cancel();
+                                                                                                            statusBox.textContent='BELLA is ready.';
+                                                                                                            };
+                                                                                                            </script>
+                                                                                                            </body>
+                                                                                                            </html>
+                                                                                  
+                                                                                                            
+                                                                                                            
+                                                                                                            
